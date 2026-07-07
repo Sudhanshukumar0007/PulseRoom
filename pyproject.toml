@@ -1,0 +1,17 @@
+[project]
+name = "pulseroom"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "alembic>=1.18.5",
+    "asyncpg>=0.31.0",
+    "fastapi>=0.139.0",
+    "passlib[bcrypt]>=1.7.4",
+    "python-jose[cryptography]>=3.5.0",
+    "redis>=8.0.1",
+    "sqlalchemy>=2.0.51",
+    "uvicorn[standard]>=0.50.2",
+    "websockets>=16.0",
+]
