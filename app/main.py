@@ -1,6 +1,8 @@
 from fastapi import Depends, FastAPI, WebSocket, WebSocketDisconnect, status
 from app.core.config import settings
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+import os
 from loguru import logger
 from app.websockets.auth import get_current_user_ws
 from uuid import UUID
@@ -74,6 +76,12 @@ def _create_base_app() -> FastAPI:
         
     app.include_router(auth_router)
     app.include_router(rooms_router)
+
+    # Serve the frontend from /app
+    _static_dir = os.path.join(os.path.dirname(__file__), "static")
+    if os.path.isdir(_static_dir):
+        app.mount("/app", StaticFiles(directory=_static_dir, html=True), name="frontend")
+
     return app
 
 app = _create_base_app()

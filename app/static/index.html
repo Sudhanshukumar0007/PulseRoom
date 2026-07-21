@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PulseRoom — Sign In</title>
+  <meta name="description" content="Sign in or create an account on PulseRoom, the real-time chat platform." />
+  <link rel="stylesheet" href="/app/style.css" />
+  <style>
+    /* ── Auth-page layout ─────────────────────────────────────────── */
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(124,106,247,.18) 0%, transparent 70%),
+        var(--bg);
+    }
+
+    .auth-card {
+      width: 420px;
+      max-width: calc(100vw - 32px);
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 36px 32px 32px;
+      box-shadow: 0 32px 80px rgba(0,0,0,.5);
+    }
+
+    /* logo */
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+    .logo-icon {
+      width: 36px; height: 36px;
+      background: var(--accent);
+      border-radius: 10px;
+      display: grid; place-items: center;
+      font-size: 18px;
+    }
+    .logo-text { font-size: 18px; font-weight: 600; letter-spacing: -.3px; }
+    .logo-sub  { font-size: 11px; color: var(--text-3); letter-spacing: .4px; text-transform: uppercase; }
+
+    /* tabs */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--bg-3);
+      border-radius: var(--radius);
+      padding: 4px;
+      margin-bottom: 24px;
+    }
+    .tab {
+      flex: 1;
+      padding: 8px;
+      text-align: center;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: var(--trans);
+      border: none;
+      background: transparent;
+      font-family: inherit;
+    }
+    .tab.active {
+      background: var(--bg-2);
+      color: var(--text);
+      box-shadow: 0 1px 4px rgba(0,0,0,.3);
+    }
+
+    /* form */
+    .form-group { margin-bottom: 14px; }
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-2);
+      margin-bottom: 6px;
+      letter-spacing: .2px;
+    }
+
+    .divider { margin: 20px 0; }
+
+    /* error / success messages */
+    .form-msg {
+      font-size: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin-bottom: 14px;
+      display: none;
+    }
+    .form-msg.error   { background: #2a1212; color: var(--danger); display: block; }
+    .form-msg.success { background: #0f2018; color: var(--success); display: block; }
+
+    /* footer */
+    .auth-footer {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-3);
+    }
+    .auth-footer a { color: var(--accent); text-decoration: none; cursor: pointer; }
+    .auth-footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="auth-card">
+    <div class="logo">
+      <div class="logo-icon">⚡</div>
+      <div>
+        <div class="logo-text">PulseRoom</div>
+        <div class="logo-sub">Real-time chat</div>
+      </div>
+    </div>
+
+    <div class="tabs" role="tablist">
+      <button class="tab active" id="tab-login"    onclick="switchTab('login')"    role="tab">Sign In</button>
+      <button class="tab"        id="tab-register"  onclick="switchTab('register')" role="tab">Create Account</button>
+    </div>
+
+    <!-- ── Login form ─────────────────────────────────────────────── -->
+    <div id="form-login">
+      <div class="form-msg" id="login-msg"></div>
+
+      <div class="form-group">
+        <label for="login-email">Email</label>
+        <input id="login-email" class="input" type="email" placeholder="you@example.com" autocomplete="email" />
+      </div>
+      <div class="form-group">
+        <label for="login-password">Password</label>
+        <input id="login-password" class="input" type="password" placeholder="••••••••" autocomplete="current-password" />
+      </div>
+
+      <button id="btn-login" class="btn btn-primary btn-full" onclick="doLogin()">
+        Sign In
+      </button>
+
+      <div class="auth-footer" style="margin-top:16px;">
+        No account? <a onclick="switchTab('register')">Create one</a>
+      </div>
+    </div>
+
+    <!-- ── Register form ──────────────────────────────────────────── -->
+    <div id="form-register" class="hidden">
+      <div class="form-msg" id="register-msg"></div>
+
+      <div class="form-group">
+        <label for="reg-name">Display Name</label>
+        <input id="reg-name" class="input" type="text" placeholder="Alice" autocomplete="name" />
+      </div>
+      <div class="form-group">
+        <label for="reg-email">Email</label>
+        <input id="reg-email" class="input" type="email" placeholder="you@example.com" autocomplete="email" />
+      </div>
+      <div class="form-group">
+        <label for="reg-password">Password</label>
+        <input id="reg-password" class="input" type="password" placeholder="At least 8 characters" autocomplete="new-password" />
+      </div>
+
+      <button id="btn-register" class="btn btn-primary btn-full" onclick="doRegister()">
+        Create Account
+      </button>
+
+      <div class="auth-footer" style="margin-top:16px;">
+        Already have an account? <a onclick="switchTab('login')">Sign in</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script>
+    // Redirect if already logged in
+    if (localStorage.getItem('pr_token')) {
+      window.location.href = '/app/chat.html';
+    }
+
+    function switchTab(tab) {
+      const isLogin = tab === 'login';
+      document.getElementById('tab-login').classList.toggle('active', isLogin);
+      document.getElementById('tab-register').classList.toggle('active', !isLogin);
+      document.getElementById('form-login').classList.toggle('hidden', !isLogin);
+      document.getElementById('form-register').classList.toggle('hidden', isLogin);
+      clearMsgs();
+    }
+
+    function clearMsgs() {
+      ['login-msg', 'register-msg'].forEach(id => {
+        const el = document.getElementById(id);
+        el.textContent = '';
+        el.className = 'form-msg';
+      });
+    }
+
+    function setMsg(id, text, type) {
+      const el = document.getElementById(id);
+      el.textContent = text;
+      el.className = 'form-msg ' + type;
+    }
+
+    function setLoading(btnId, loading) {
+      const btn = document.getElementById(btnId);
+      btn.disabled = loading;
+      btn.textContent = loading
+        ? (btnId === 'btn-login' ? 'Signing in…' : 'Creating account…')
+        : (btnId === 'btn-login' ? 'Sign In' : 'Create Account');
+    }
+
+    async function doLogin() {
+      const email    = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+
+      if (!email || !password) {
+        setMsg('login-msg', 'Please fill in all fields.', 'error');
+        return;
+      }
+
+      setLoading('btn-login', true);
+      clearMsgs();
+
+      try {
+        const body = new URLSearchParams({ username: email, password });
+        const res  = await fetch('/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body,
+        });
+
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          setMsg('login-msg', data.detail || 'Invalid credentials.', 'error');
+          return;
+        }
+
+        const data = await res.json();
+        localStorage.setItem('pr_token', data.access_token);
+        window.location.href = '/app/chat.html';
+      } catch {
+        setMsg('login-msg', 'Network error. Please try again.', 'error');
+      } finally {
+        setLoading('btn-login', false);
+      }
+    }
+
+    async function doRegister() {
+      const name     = document.getElementById('reg-name').value.trim();
+      const email    = document.getElementById('reg-email').value.trim();
+      const password = document.getElementById('reg-password').value;
+
+      if (!name || !email || !password) {
+        setMsg('register-msg', 'Please fill in all fields.', 'error');
+        return;
+      }
+      if (password.length < 8) {
+        setMsg('register-msg', 'Password must be at least 8 characters.', 'error');
+        return;
+      }
+
+      setLoading('btn-register', true);
+      clearMsgs();
+
+      try {
+        const res = await fetch('/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password }),
+        });
+
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          setMsg('register-msg', data.detail || 'Registration failed.', 'error');
+          return;
+        }
+
+        // Auto-login after registration
+        setMsg('register-msg', 'Account created! Signing you in…', 'success');
+        const loginBody = new URLSearchParams({ username: email, password });
+        const loginRes  = await fetch('/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: loginBody,
+        });
+
+        if (loginRes.ok) {
+          const loginData = await loginRes.json();
+          localStorage.setItem('pr_token', loginData.access_token);
+          window.location.href = '/app/chat.html';
+        } else {
+          setMsg('register-msg', 'Account created! Please sign in.', 'success');
+          setTimeout(() => switchTab('login'), 1500);
+        }
+      } catch {
+        setMsg('register-msg', 'Network error. Please try again.', 'error');
+      } finally {
+        setLoading('btn-register', false);
+      }
+    }
+
+    // Allow Enter key to submit
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Enter') return;
+      const loginHidden = document.getElementById('form-login').classList.contains('hidden');
+      if (!loginHidden) doLogin();
+      else doRegister();
+    });
+  </script>
+</body>
+</html>
