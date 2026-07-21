@@ -378,7 +378,7 @@ CI starts PostgreSQL and Redis services, installs dependencies with `uv`, runs A
 The Dockerfile starts the app with:
 
 ```bash
-uv run uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}
+uv run alembic upgrade head && uv run uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}
 ```
 
 For Render:
@@ -389,11 +389,8 @@ For Render:
 - Set `REDIS_URL` to the Redis service URL.
 - Set `SECRET_KEY` to a strong generated secret.
 - Set `DEBUG=false`.
-- Configure the pre-deploy command:
-
-```bash
-uv run alembic upgrade head
-```
+- The container now applies Alembic migrations before starting Uvicorn, so schema setup is not dependent on a separate dashboard step.
+- If your platform supports a pre-deploy command, keeping `uv run alembic upgrade head` there is still fine as an extra safety check.
 
 If using Render auto-deploy, choose "After CI Checks Pass" once GitHub Actions is green.
 
