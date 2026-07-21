@@ -2,7 +2,16 @@
 
 PulseRoom is a FastAPI backend for room-based realtime chat. It supports authenticated users, rooms, room membership, WebSocket chat, Redis-backed fan-out across multiple app instances, ephemeral presence and typing indicators, persisted message history, reconnect history replay, and per-user message rate limiting.
 
-The project is intentionally backend-first. The `/` route serves a small debug chat page for manual WebSocket testing, but the main product surface is the HTTP API and WebSocket protocol.
+The project is intentionally backend-first. The `/` route serves a small demo chat page for manual WebSocket testing, but the main product surface is the HTTP API and WebSocket protocol.
+
+## Demo
+
+The root page at `/` is a demo tool only.
+
+- It is useful for manual WebSocket testing and reconnect checks.
+- It is not the production frontend.
+- It will remain a demo experience and should not be treated as the user-facing app in production environments.
+- Production usage should come through a real frontend that integrates with the API and WebSocket endpoints.
 
 ## What It Does
 
@@ -140,7 +149,17 @@ Open:
 http://localhost:8000
 ```
 
-The root page is only a debug client. Use the API endpoints to register, log in, create a room, then paste the token and room ID into the debug page.
+The root page is only a demo client. It asks for an access token and room ID because it connects directly to the WebSocket endpoint.
+
+Use it like this:
+
+1. Register a user through `POST /auth/register`.
+2. Log in through `POST /auth/login` and copy the `access_token`.
+3. Create a room through `POST /rooms/` with that token.
+4. Copy the returned `room_id`.
+5. Open `http://localhost:8000`.
+6. Paste the access token and room ID into the prompts.
+7. Optionally provide `last_seen_message_id` if you want history replay from a specific message.
 
 ## Docker Compose
 
@@ -369,9 +388,9 @@ If using Render auto-deploy, choose "After CI Checks Pass" once GitHub Actions i
 
 ## Current Limitations
 
-- WebSocket auth currently passes the JWT in the query string. This is functional and common for simple WebSocket clients, but URLs can appear in logs and browser history. A production frontend should prefer a safer auth transport such as a short-lived WebSocket ticket or secure cookie flow.
+- WebSocket auth currently passes the JWT in the query string. This is functional for the demo client and common for simple WebSocket tools, but URLs can appear in logs and browser history. A production frontend should prefer a safer auth transport such as a short-lived WebSocket ticket or secure cookie flow.
 - Redis Pub/Sub is fire-and-forget. Messages are persisted to PostgreSQL, but Pub/Sub itself does not replay events to instances that were offline at publish time.
-- The root HTML page is a debug tool, not a production frontend.
+- The root HTML page is a demo tool, not a production frontend.
 - There is no load balancer service in Docker Compose; the two app instances are exposed separately on ports `8000` and `8001`.
 
 ## Security Notes
