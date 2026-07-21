@@ -103,7 +103,7 @@ app/
   schemas/             Pydantic request/response schemas
   services/            business logic for users, rooms, messages
   websockets/          WebSocket auth helper
-  main.py              FastAPI app, health route, debug page, WebSocket endpoint
+  main.py              FastAPI app, health route, WebSocket endpoint, static frontend mount
 
 migrations/            Alembic migration environment and revisions
 tests/                 HTTP and WebSocket integration tests
@@ -162,13 +162,11 @@ Run the app:
 uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Open:
+Open the frontend:
 
 ```text
-http://localhost:8000
+http://localhost:8000/app
 ```
-
-The root page is only a demo client. It asks for an access token and room ID because it connects directly to the WebSocket endpoint.
 
 ## Docker Compose
 
@@ -391,6 +389,3 @@ For Render:
 - If your platform supports a pre-deploy command, keeping `uv run alembic upgrade head` there is still fine as an extra safety check.
 
 If using Render auto-deploy, choose "After CI Checks Pass" once GitHub Actions is green.
-
-
-
