@@ -2,37 +2,35 @@
 
 PulseRoom is a FastAPI backend for room-based realtime chat. It supports authenticated users, rooms, room membership, WebSocket chat, Redis-backed fan-out across multiple app instances, ephemeral presence and typing indicators, persisted message history, reconnect history replay, and per-user message rate limiting.
 
-The project is intentionally backend-first. The `/` route serves a small demo chat page for manual WebSocket testing, but the main product surface is the HTTP API and WebSocket protocol.
+The project ships with a minimal, dark-themed frontend served at `/app` — login, room management, and live WebSocket chat — built in vanilla HTML/CSS/JS with no build step or external framework.
 
 ## Demo
 
-The root page at `/` is a demo tool only.
+**Live:** [https://pulseroom-6r1l.onrender.com](https://pulseroom-6r1l.onrender.com)
 
-- It is useful for manual WebSocket testing and reconnect checks.
-- It is not the production frontend.
-- It will remain a demo experience and should not be treated as the user-facing app in production environments.
-- Production usage should come through a real frontend that integrates with the API and WebSocket endpoints.
-
-Live demo URLs:
-
-- Normal app: `https://pulseroom-6r1l.onrender.com`
-- API docs: `https://pulseroom-6r1l.onrender.com/docs`
+| URL | Purpose |
+|---|---|
+| [`/app`](https://pulseroom-6r1l.onrender.com/app) | Frontend — login / register |
+| [`/app/chat.html`](https://pulseroom-6r1l.onrender.com/app/chat.html) | Frontend — chat rooms |
+| [`/docs`](https://pulseroom-6r1l.onrender.com/docs) | Interactive API docs (Swagger) |
+| [`/health`](https://pulseroom-6r1l.onrender.com/health) | DB + Redis health check |
 
 For local development:
 
-- Normal app: `http://localhost:8000`
-- API docs: `http://localhost:8000/docs`
+| URL | Purpose |
+|---|---|
+| `http://localhost:8000/app` | Frontend — login / register |
+| `http://localhost:8000/app/chat.html` | Frontend — chat rooms |
+| `http://localhost:8000/docs` | API docs |
 
-Use it like this:
+To use the frontend:
 
-1. Open the API docs at `/docs`.
-2. Register a user with `POST /auth/register`.
-3. Log in with `POST /auth/login` and copy the `access_token`.
-4. Create a room with `POST /rooms/` using that token.
-5. Join the room with `POST /rooms/{room_id}/join` if needed for a second account.
-6. Open the normal app at `/`.
-7. Paste the access token and room ID into the prompts.
-8. Optionally provide `last_seen_message_id` if you want history replay from a specific message.
+1. Open [`/app`](https://pulseroom-6r1l.onrender.com/app) and create an account.
+2. Create a room — you are automatically joined as a member.
+3. Share the room ID with another user so they can join.
+4. Open the chat and start messaging in real time.
+
+To test the API directly, use the [`/docs`](https://pulseroom-6r1l.onrender.com/docs) page.
 
 ## What It Does
 
