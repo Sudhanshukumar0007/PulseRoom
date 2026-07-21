@@ -265,7 +265,91 @@
     .modal-close:hover { color: var(--text); }
     .modal { position: relative; }
 
-    /* ── Connection banner ───────────────────────────────────────── */
+    /* ── Share popover ───────────────────────────────────────────── */
+    .share-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text-3);
+      font-size: 11px;
+      font-family: inherit;
+      padding: 4px 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: var(--trans);
+      white-space: nowrap;
+    }
+    .share-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    .share-popover {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      width: 320px;
+      box-shadow: 0 12px 32px rgba(0,0,0,.4);
+      z-index: 100;
+      animation: slideUp .15s ease;
+    }
+    .share-popover-label {
+      font-size: 11px;
+      color: var(--text-3);
+      margin-bottom: 8px;
+      font-weight: 500;
+      letter-spacing: .3px;
+      text-transform: uppercase;
+    }
+    .share-popover-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .share-id-box {
+      flex: 1;
+      background: var(--bg-4);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 7px 10px;
+      font-size: 11px;
+      font-family: monospace;
+      color: var(--text-2);
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      user-select: all;
+    }
+    .copy-btn {
+      flex-shrink: 0;
+      padding: 7px 12px;
+      font-size: 12px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 500;
+      transition: var(--trans);
+    }
+    .copy-btn:hover { background: #6b59e8; }
+    .share-hint {
+      font-size: 11px;
+      color: var(--text-3);
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+    .chat-header-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: relative;
+    }
     #conn-banner {
       padding: 8px 20px;
       background: #2a1a00;
@@ -320,9 +404,22 @@
       <div class="chat-header">
         <span class="chat-header-hash">#</span>
         <span class="chat-header-name" id="chat-room-name">room-name</span>
-        <div class="chat-header-status">
-          <div class="status-dot" id="status-dot"></div>
-          <span id="status-label">Disconnected</span>
+        <div class="chat-header-right">
+          <button class="share-btn" onclick="toggleSharePopover()" title="Share room ID">
+            🔗 Share Room
+          </button>
+          <div id="share-popover" class="share-popover hidden">
+            <div class="share-popover-label">Room ID — share this to invite others</div>
+            <div class="share-popover-row">
+              <div class="share-id-box" id="share-id-text"></div>
+              <button class="copy-btn" id="copy-btn" onclick="copyRoomId()">Copy</button>
+            </div>
+            <div class="share-hint">Others can join using the <strong>Join Room</strong> button (+) in the sidebar.</div>
+          </div>
+          <div class="chat-header-status">
+            <div class="status-dot" id="status-dot"></div>
+            <span id="status-label">Disconnected</span>
+          </div>
         </div>
       </div>
 
@@ -472,12 +569,17 @@
 
       // Clean up old connection
       closeWS();
+      // Close share popover if open
+      document.getElementById('share-popover').classList.add('hidden');
 
       activeRoomId = room.id;
       lastMsgSender = null;
       lastSeenMsgId = null;
 
       renderRooms();
+
+      // Update share popover ID
+      document.getElementById('share-id-text').textContent = room.id;
 
       // Show chat panel
       document.getElementById('no-room').classList.add('hidden');
@@ -771,12 +873,49 @@
       }
     }
 
-    // ── Sign out ──────────────────────────────────────────────────
+    // ── Sign out ─────────────────────────────────────────────
     function signOut() {
       closeWS();
       localStorage.removeItem('pr_token');
       window.location.href = '/app/index.html';
     }
+
+    // ── Share popover ─────────────────────────────────────────
+    function toggleSharePopover() {
+      const pop = document.getElementById('share-popover');
+      pop.classList.toggle('hidden');
+    }
+
+    function copyRoomId() {
+      const id = activeRoomId;
+      if (!id) return;
+      navigator.clipboard.writeText(id).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+      }).catch(() => {
+        // Fallback for environments without clipboard API
+        const box = document.getElementById('share-id-text');
+        const range = document.createRange();
+        range.selectNode(box);
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+        document.execCommand('copy');
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+      });
+    }
+
+    // Close share popover when clicking outside
+    document.addEventListener('click', e => {
+      const pop = document.getElementById('share-popover');
+      if (!pop || pop.classList.contains('hidden')) return;
+      const wrapper = pop.closest('.chat-header-right');
+      if (wrapper && !wrapper.contains(e.target)) {
+        pop.classList.add('hidden');
+      }
+    });
 
     // ── Toast ─────────────────────────────────────────────────────
     function showToast(msg, type = 'info') {
