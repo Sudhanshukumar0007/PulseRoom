@@ -13,6 +13,16 @@ The root page at `/` is a demo tool only.
 - It will remain a demo experience and should not be treated as the user-facing app in production environments.
 - Production usage should come through a real frontend that integrates with the API and WebSocket endpoints.
 
+Live demo URLs:
+
+- Normal app: `https://pulseroom-6r1l.onrender.com`
+- API docs: `https://pulseroom-6r1l.onrender.com/docs`
+
+For local development:
+
+- Normal app: `http://localhost:8000`
+- API docs: `http://localhost:8000/docs`
+
 ## What It Does
 
 - Registers and authenticates users with JWT access tokens.
@@ -153,13 +163,14 @@ The root page is only a demo client. It asks for an access token and room ID bec
 
 Use it like this:
 
-1. Register a user through `POST /auth/register`.
-2. Log in through `POST /auth/login` and copy the `access_token`.
-3. Create a room through `POST /rooms/` with that token.
-4. Copy the returned `room_id`.
-5. Open `http://localhost:8000`.
-6. Paste the access token and room ID into the prompts.
-7. Optionally provide `last_seen_message_id` if you want history replay from a specific message.
+1. Open the API docs at `/docs`.
+2. Register a user with `POST /auth/register`.
+3. Log in with `POST /auth/login` and copy the `access_token`.
+4. Create a room with `POST /rooms/` using that token.
+5. Join the room with `POST /rooms/{room_id}/join` if needed for a second account.
+6. Open the normal app at `/`.
+7. Paste the access token and room ID into the prompts.
+8. Optionally provide `last_seen_message_id` if you want history replay from a specific message.
 
 ## Docker Compose
 
