@@ -1,6 +1,6 @@
 from fastapi import Depends, FastAPI, WebSocket, WebSocketDisconnect, status
 from app.core.config import settings
-from fastapi.responses import HTMLResponse
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 import os
 from loguru import logger
@@ -86,150 +86,6 @@ def _create_base_app() -> FastAPI:
 
 app = _create_base_app()
 
-html = """
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>PulseRoom Debug Chat</title>
-        <style>
-            body { font-family: sans-serif; padding: 20px; }
-            #controls { margin-bottom: 15px; }
-            button { margin-right: 8px; padding: 4px 10px; }
-            #typing-label { color: #888; font-style: italic; height: 20px; }
-            .system { color: #888; font-style: italic; }
-            .msg-id { font-size: 0.75em; color: #aaa; margin-left: 8px; }
-        </style>
-    </head>
-    <body>
-        <h1>WebSocket Chat (Debug)</h1>
-        <h2>Your name: <span id="ws-id">connecting...</span></h2>
-        <h3>Connected to: <span id="host-label"></span> | Room: <span id="room-label"></span></h3>
-
-        <div id="controls">
-            <button onclick="location.reload()">Reconnect / New Token</button>
-        </div>
-
-        <form action="" onsubmit="sendMessage(event)">
-            <input type="text" id="messageText" autocomplete="off" style="width: 300px;"/>
-            <button>Send</button>
-        </form>
-        <div id="typing-label"></div>
-        <ul id="messages"></ul>
-
-        <script>
-            // Manually prompt for credentials on every page load
-            var token = prompt("Paste your access token:");
-            var roomId = prompt("Paste the room ID:");
-            var lastSeenId = prompt("Enter last_seen_message_id (Optional: leave blank to load normal history):");
-
-            var ws; // Declare websocket globally for the input handlers
-
-            if (!token || !roomId) {
-                alert("Token and Room ID are required to connect. Please refresh the page and try again.");
-            } else {
-                document.querySelector("#host-label").textContent = window.location.host;
-                document.querySelector("#room-label").textContent = roomId;
-
-                // ---- URL construction with last_seen_message_id ----
-                var wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-                var wsUrl = `${wsProtocol}//${window.location.host}/ws/${roomId}?token=${token}`;
-                
-                if (lastSeenId && lastSeenId.trim() !== "") {
-                    wsUrl += `&last_seen_message_id=${lastSeenId.trim()}`;
-                }
-                
-                ws = new WebSocket(wsUrl);
-
-                ws.onopen = function() {
-                    console.log("WebSocket opened. Starting heartbeats.");
-                    setInterval(function() {
-                        if (ws.readyState === WebSocket.OPEN) {
-                            ws.send(JSON.stringify({ type: "ping" }));
-                        }
-                    }, 15000);
-                };
-
-                var typingClearTimer = null;
-
-                ws.onmessage = function(event) {
-                    var data;
-                    try {
-                        data = JSON.parse(event.data);
-                    } catch (e) {
-                        if (event.data.startsWith("Connected as ")) {
-                            document.querySelector("#ws-id").textContent = event.data.replace("Connected as ", "");
-                        } else {
-                            appendMessage(event.data, true);
-                        }
-                        return;
-                    }
-
-                    if (data.type === "chat") {
-                        // Display message ID nicely so you can copy it for testing the last_seen function
-                        appendChatMessage(data.sender || 'Unknown', data.content || "", data.id);
-                    } else if (data.type === "typing") {
-                        document.querySelector("#typing-label").textContent = `${data.user} is typing...`;
-                        clearTimeout(typingClearTimer);
-                        typingClearTimer = setTimeout(function() {
-                            document.querySelector("#typing-label").textContent = "";
-                        }, 3000);
-                    } else if (data.type === "system") {
-                        appendMessage(data.content, true);
-                    } else {
-                        appendMessage(JSON.stringify(data), true);
-                    }
-                };
-
-                ws.onclose = function(event) {
-                    console.log("Closed:", event.code, event.reason);
-                    document.querySelector("#ws-id").textContent = "disconnected";
-                    appendMessage(`Connection closed (code ${event.code})`, true);
-                };
-            }
-
-            function appendMessage(text, isSystem) {
-                var messages = document.getElementById("messages");
-                var li = document.createElement("li");
-                if (isSystem) li.className = "system";
-                li.appendChild(document.createTextNode(text));
-                messages.appendChild(li);
-            }
-            
-            function appendChatMessage(sender, content, id) {
-                var messages = document.getElementById("messages");
-                var li = document.createElement("li");
-                li.appendChild(document.createTextNode(`${sender}: ${content}`));
-                if (id) {
-                    var idSpan = document.createElement("span");
-                    idSpan.className = "msg-id";
-                    idSpan.textContent = ` [ID: ${id}]`;
-                    li.appendChild(idSpan);
-                }
-                messages.appendChild(li);
-            }
-
-            var typingSendTimeout = null;
-            document.getElementById("messageText").addEventListener("input", function() {
-                if (ws && ws.readyState === WebSocket.OPEN && !typingSendTimeout) {
-                    ws.send(JSON.stringify({ type: "typing" }));
-                }
-                clearTimeout(typingSendTimeout);
-                typingSendTimeout = setTimeout(function() { typingSendTimeout = null; }, 3000);
-            });
-
-            function sendMessage(event) {
-                event.preventDefault();
-                var input = document.getElementById("messageText");
-                if (ws && ws.readyState === WebSocket.OPEN && input.value.trim() !== "") {
-                    ws.send(JSON.stringify({ type: "chat", content: input.value }));
-                    input.value = "";
-                }
-            }
-        </script>
-    </body>
-</html>
-"""
-
 class ConnectionManager:
     def __init__(self):
         self.active_connections: dict[UUID, list[WebSocket]] = {}
@@ -260,7 +116,7 @@ MAX_CHAT_CONTENT_LENGTH = 1024
 
 @app.get("/")
 async def get():
-    return HTMLResponse(html)
+    return RedirectResponse(url="/app", status_code=301)
 
 @app.websocket("/ws/{room_id}")
 async def websocket_endpoint(
@@ -405,6 +261,6 @@ async def handle_websocket(websocket: WebSocket, room_id: UUID, db: AsyncSession
 
 def create_app() -> FastAPI:
     new_app = _create_base_app()
-    new_app.add_api_route("/", get, methods=["GET"], response_class=HTMLResponse)
+    new_app.add_api_route("/", get, methods=["GET"], response_class=RedirectResponse)
     new_app.add_api_websocket_route("/ws/{room_id}", websocket_endpoint)
     return new_app
