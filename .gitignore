@@ -3,3 +3,4 @@ __pycache__/
 *.pyc
 .env
 guide.md
+deployment_guide.md

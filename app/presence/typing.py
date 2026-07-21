@@ -1,8 +1,8 @@
 from uuid import UUID
+from loguru import logger
 import app.core.redis as redis_module
-from app.core.redis import get_redis
 
-TYPING_TTL = 5  # seconds — short, since typing indicators should expire fast
+TYPING_TTL = 5  # seconds - short, since typing indicators should expire fast
 
 async def set_typing_indicator(room_id: UUID, user_id: UUID, user_name: str) -> None:
     if not redis_module.redis_client:

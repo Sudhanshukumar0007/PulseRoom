@@ -5,6 +5,7 @@ from app.db.session import get_db
 from app.schemas.user import UserResponse, UserRegister, Token
 from app.services.user_service import register_user, login_user
 from app.models.user import User
+from app.api.deps import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -18,3 +19,7 @@ async def login(
     db: AsyncSession = Depends(get_db)
 ):
     return await login_user(db, form_data.username, form_data.password)
+
+@router.get("/me", response_model=UserResponse)
+async def me(user: User = Depends(get_current_user)):
+    return user

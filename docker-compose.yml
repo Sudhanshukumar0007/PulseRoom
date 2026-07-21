@@ -29,5 +29,60 @@ services:
       timeout: 5s
       retries: 5
 
+  migrate:
+    build: .
+    container_name: pulseroom-migrate
+    command: ["uv", "run", "alembic", "upgrade", "head"]
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/pulseroom
+      REDIS_URL: redis://redis:6379
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Two app instances sharing the same Postgres + Redis -- this is the actual
+  # setup Phase 3 (cross-instance Pub/Sub fan-out) needs to be reproducible
+  # for anyone else running the project, not just via manually-run uvicorn
+  # processes on different ports.
+  app1:
+    build: .
+    container_name: pulseroom-app1
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/pulseroom
+      REDIS_URL: redis://redis:6379
+    env_file:
+      - .env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  app2:
+    build: .
+    container_name: pulseroom-app2
+    restart: unless-stopped
+    ports:
+      - "8001:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/pulseroom
+      REDIS_URL: redis://redis:6379
+    env_file:
+      - .env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
 volumes:
   pulseroom_pg_data:

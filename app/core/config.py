@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     APP_ENV:str = 'development'
-    DEBUG:bool = True
+    DEBUG:bool = False
     APP_NAME:str = 'PulseRoom'
     VERSION:str = "0.1.0"
 
