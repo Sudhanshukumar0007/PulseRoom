@@ -23,6 +23,17 @@ For local development:
 - Normal app: `http://localhost:8000`
 - API docs: `http://localhost:8000/docs`
 
+Use it like this:
+
+1. Open the API docs at `/docs`.
+2. Register a user with `POST /auth/register`.
+3. Log in with `POST /auth/login` and copy the `access_token`.
+4. Create a room with `POST /rooms/` using that token.
+5. Join the room with `POST /rooms/{room_id}/join` if needed for a second account.
+6. Open the normal app at `/`.
+7. Paste the access token and room ID into the prompts.
+8. Optionally provide `last_seen_message_id` if you want history replay from a specific message.
+
 ## What It Does
 
 - Registers and authenticates users with JWT access tokens.
@@ -160,17 +171,6 @@ http://localhost:8000
 ```
 
 The root page is only a demo client. It asks for an access token and room ID because it connects directly to the WebSocket endpoint.
-
-Use it like this:
-
-1. Open the API docs at `/docs`.
-2. Register a user with `POST /auth/register`.
-3. Log in with `POST /auth/login` and copy the `access_token`.
-4. Create a room with `POST /rooms/` using that token.
-5. Join the room with `POST /rooms/{room_id}/join` if needed for a second account.
-6. Open the normal app at `/`.
-7. Paste the access token and room ID into the prompts.
-8. Optionally provide `last_seen_message_id` if you want history replay from a specific message.
 
 ## Docker Compose
 
