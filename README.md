@@ -392,17 +392,5 @@ For Render:
 
 If using Render auto-deploy, choose "After CI Checks Pass" once GitHub Actions is green.
 
-## Current Limitations
 
-- WebSocket auth currently passes the JWT in the query string. This is functional for the demo client and common for simple WebSocket tools, but URLs can appear in logs and browser history. A production frontend should prefer a safer auth transport such as a short-lived WebSocket ticket or secure cookie flow.
-- Redis Pub/Sub is fire-and-forget. Messages are persisted to PostgreSQL, but Pub/Sub itself does not replay events to instances that were offline at publish time.
-- The root HTML page is a demo tool, not a production frontend.
-- There is no load balancer service in Docker Compose; the two app instances are exposed separately on ports `8000` and `8001`.
 
-## Security Notes
-
-- Passwords are stored as bcrypt hashes.
-- JWTs are signed with `SECRET_KEY`; production must use a strong secret.
-- Chat content is rendered as text in the debug client to avoid HTML/script execution.
-- WebSocket chat rejects non-members.
-- Message sending is rate-limited per user through Redis.
